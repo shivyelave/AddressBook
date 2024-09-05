@@ -4,29 +4,80 @@
     @Author: Shivraj Yelave
     @Date: 05-09-24
     @Last modified by: Shivraj Yelave
-    @Last modified time: 
+    @Last modified time: 05-09-24
     @Title: Address Book Program
 
 
 '''
 
 # Import required modules/files
-import re  # Import the regular expressions module for input validation
-from logger import get_info_logger  # Import the custom logger function from the logger module
+import re
+from logger import get_info_logger
 
 # Regex patterns for validation
-EMAIL_REGEX = r'^[\w]+([._%+-][\w]+)*@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$'  # Regular expression for email validation
-PHONE_REGEX = r'^\d{10}$'  # Regular expression for phone number validation (10 digits)
-ZIP_REGEX = r'^\d{6}$'  # Regular expression for zip code validation (6 digits)
+EMAIL_REGEX = r'^[\w]+([._%+-][\w]+)*@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$'
+PHONE_REGEX = r'^\d{10}$'
+ZIP_REGEX = r'^\d{6}$'
 
 # Setup logger
-logger = get_info_logger('AddressBook')  # Initialize the logger with the name 'AddressBook'
+logger = get_info_logger('AddressBook')
+
+class Contact:
+    def __init__(self, first_name, last_name, address, city, state, zip_code, phone_number, email):
+
+        """
+        Description:
+        Initializes a Contact instance with the given details.
+        
+        Parameters:
+        first_name (str): First name of the contact.
+        last_name (str): Last name of the contact.
+        address (str): Address of the contact.
+        city (str): City of the contact.
+        state (str): State of the contact.
+        zip_code (str): Zip code of the contact.
+        phone_number (str): Phone number of the contact.
+        email (str): Email address of the contact.
+        
+        """
+        
+        self.first_name = first_name
+        self.last_name = last_name
+        self.address = address
+        self.city = city
+        self.state = state
+        self.zip_code = zip_code
+        self.phone_number = phone_number
+        self.email = email
+
+    def __str__(self):
+        
+        return (f"{self.first_name} {self.last_name}, {self.address}, {self.city}, "
+                f"{self.state}, {self.zip_code}, {self.phone_number}, {self.email}")
+
+class AddressBook:
+    def __init__(self):
+
+        self.contacts = []
+
+    def add_contact(self, contact):
+        
+        """
+        Description:
+        Adds a Contact instance to the address book and logs the addition.
+        
+        Parameters:
+        contact (Contact): The Contact instance to add.
+        
+        """
+        
+        self.contacts.append(contact)
+        logger.info(f"Contact added: {contact}")
 
 def get_valid_input(prompt, validation_func):
     
     """
-    
-    Description: 
+    Description:
     Prompts the user for input until the input is valid according to the validation function.
 
     Parameters:
@@ -38,20 +89,18 @@ def get_valid_input(prompt, validation_func):
     
     """
     
-    while True:  # Continuously prompt the user until valid input is provided
-        user_input = input(prompt)  # Display prompt and get user input
-
-        if validation_func(user_input):  # Check if the input is valid
-            return user_input  # Return valid input
+    while True:
+        user_input = input(prompt)
+        if validation_func(user_input):
+            return user_input
         else:
-            logger.error(f"Invalid input: {user_input}")  # Log an error if input is invalid
-            print("Invalid input. Please try again.")  # Notify the user about invalid input
+            logger.error(f"Invalid input: {user_input}")
+            print("Invalid input. Please try again.")
 
 def is_valid_email(email):
     
     """
-    
-    Description: 
+    Description:
     Validate the email address using regex.
 
     Parameters:
@@ -62,30 +111,28 @@ def is_valid_email(email):
     
     """
     
-    return re.match(EMAIL_REGEX, email) is not None  # Check if the email matches the regex pattern
+    return re.match(EMAIL_REGEX, email) is not None
 
 def is_valid_phone(phone):
     
     """
-    
-    Description: 
+    Description:
     Validate the phone number using regex.
 
     Parameters:
     phone (str): The phone number to validate.
 
     Returns:
+    
     bool: True if the phone number is valid, False otherwise.
     
     """
-    
-    return re.match(PHONE_REGEX, phone) is not None  # Check if the phone number matches the regex pattern
+    return re.match(PHONE_REGEX, phone) is not None
 
 def is_valid_zip(zip_code):
     
     """
-    
-    Description: 
+    Description:
     Validate the zip code using regex.
 
     Parameters:
@@ -96,24 +143,41 @@ def is_valid_zip(zip_code):
     
     """
     
-    return re.match(ZIP_REGEX, zip_code) is not None  # Check if the zip code matches the regex pattern
+    return re.match(ZIP_REGEX, zip_code) is not None
 
 def main():
-    # Print a welcome message to the user
-    print(f"{'*'*10} Welcome to Address Book Program {'*'*10}")
-    
-    # Prompt the user for input and validate each field
-    first_name = get_valid_input("Enter first name: ", lambda x: len(x) > 0)  # Validate first name
-    last_name = get_valid_input("Enter last name: ", lambda x: len(x) > 0)  # Validate last name
-    address = get_valid_input("Enter address: ", lambda x: len(x) > 0)  # Validate address
-    city = get_valid_input("Enter city: ", lambda x: len(x) > 0)  # Validate city
-    state = get_valid_input("Enter state: ", lambda x: len(x) > 0)  # Validate state
-    zip_code = get_valid_input("Enter zip code: ", is_valid_zip)  # Validate zip code
-    phone_number = get_valid_input("Enter phone number: ", is_valid_phone)  # Validate phone number
-    email = get_valid_input("Enter email address: ", is_valid_email)  # Validate email address
 
-    # Log the details of the added contact
-    logger.info(f"Contact added: {first_name} {last_name}, {address}, {city}, {state}, {zip_code}, {phone_number}, {email}")
+    print(f"{'*'*10}Welcome to Address Book Program{'*'*10}")
+
+    address_book = AddressBook()
+
+    while True:
+        print("\n1. Add New Contact")
+        print("2. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            # Get user inputs and validate
+            first_name = get_valid_input("Enter first name: ", lambda x: len(x) > 0)
+            last_name = get_valid_input("Enter last name: ", lambda x: len(x) > 0)
+            address = get_valid_input("Enter address: ", lambda x: len(x) > 0)
+            city = get_valid_input("Enter city: ", lambda x: len(x) > 0)
+            state = get_valid_input("Enter state: ", lambda x: len(x) > 0)
+            zip_code = get_valid_input("Enter zip code: ", is_valid_zip)
+            phone_number = get_valid_input("Enter phone number: ", is_valid_phone)
+            email = get_valid_input("Enter email address: ", is_valid_email)
+
+            # Create and add contact
+            contact = Contact(first_name, last_name, address, city, state, zip_code, phone_number, email)
+            address_book.add_contact(contact)
+            print("\nNew Contact Added Successfully!")
+
+        elif choice == '2':
+            # Exit the program
+            break
+        else:
+            print("Invalid choice. Please try again.")
 
 if __name__ == "__main__":
-    main()  # Run the main function if the script is executed directly
+    main()
