@@ -24,8 +24,9 @@ logger = get_info_logger('AddressBook')
 
 class Contact:
     def __init__(self, first_name, last_name, address, city, state, zip_code, phone_number, email):
-
+        
         """
+        
         Description:
         Initializes a Contact instance with the given details.
         
@@ -51,18 +52,18 @@ class Contact:
         self.email = email
 
     def __str__(self):
-        
         return (f"{self.first_name} {self.last_name}, {self.address}, {self.city}, "
                 f"{self.state}, {self.zip_code}, {self.phone_number}, {self.email}")
 
 class AddressBook:
     def __init__(self):
-
-        self.contacts = []
+        # Initialize the address book with a single contact (default to None)
+        self.contact = None
 
     def add_contact(self, contact):
         
         """
+        
         Description:
         Adds a Contact instance to the address book and logs the addition.
         
@@ -71,12 +72,66 @@ class AddressBook:
         
         """
         
-        self.contacts.append(contact)
-        logger.info(f"Contact added: {contact}")
+        self.contact = contact
+        logger.info(f"Contact added: {contact.__dict__}")
+
+    def edit_contact(self, field, new_value):
+        
+        """
+        
+        Description:
+        Edits the contact's details.
+        
+        Parameters:
+        field (str): The field to edit ('first_name', 'last_name', 'address', 'city', 'state', 'zip_code', 'phone_number', 'email').
+        new_value (str): The new value for the specified field.
+        
+        """
+        
+        if self.contact:
+            if field == 'first_name':
+                self.contact.first_name = new_value
+            elif field == 'last_name':
+                self.contact.last_name = new_value
+            elif field == 'address':
+                self.contact.address = new_value
+            elif field == 'city':
+                self.contact.city = new_value
+            elif field == 'state':
+                self.contact.state = new_value
+            elif field == 'zip_code':
+                self.contact.zip_code = new_value
+            elif field == 'phone_number':
+                self.contact.phone_number = new_value
+            elif field == 'email':
+                self.contact.email = new_value
+            else:
+                logger.error(f"Invalid field: {field}")
+                return
+            logger.info(f"Contact updated: {self.contact.__dict__}")
+        else:
+            logger.error("No contact found to edit.")
+    def display_contact(self):
+        """
+        
+        Description:
+        Display Contact.
+        
+        Parameters:
+        None.
+        
+        """
+        if self.contact:
+                logger.info(f"Contact: {self.contact.__dict__}")
+                print(f"Contact: {self.contact.__dict__}")
+        else:
+            print("No contacts to display.")
+
 
 def get_valid_input(prompt, validation_func):
     
     """
+    
     Description:
     Prompts the user for input until the input is valid according to the validation function.
 
@@ -100,6 +155,7 @@ def get_valid_input(prompt, validation_func):
 def is_valid_email(email):
     
     """
+    
     Description:
     Validate the email address using regex.
 
@@ -116,6 +172,7 @@ def is_valid_email(email):
 def is_valid_phone(phone):
     
     """
+    
     Description:
     Validate the phone number using regex.
 
@@ -123,7 +180,6 @@ def is_valid_phone(phone):
     phone (str): The phone number to validate.
 
     Returns:
-    
     bool: True if the phone number is valid, False otherwise.
     
     """
@@ -132,6 +188,7 @@ def is_valid_phone(phone):
 def is_valid_zip(zip_code):
     
     """
+    
     Description:
     Validate the zip code using regex.
 
@@ -142,18 +199,18 @@ def is_valid_zip(zip_code):
     bool: True if the zip code is valid, False otherwise.
     
     """
-    
     return re.match(ZIP_REGEX, zip_code) is not None
 
 def main():
-
     print(f"{'*'*10}Welcome to Address Book Program{'*'*10}")
 
     address_book = AddressBook()
 
     while True:
         print("\n1. Add New Contact")
-        print("2. Exit")
+        print("2. Display Contact")
+        print("3. Edit Contact")
+        print("4. Exit")
 
         choice = input("Enter your choice: ")
 
@@ -173,7 +230,23 @@ def main():
             address_book.add_contact(contact)
             print("\nNew Contact Added Successfully!")
 
+
         elif choice == '2':
+            address_book.display_contact()
+        elif choice == '3':
+            print("\nEnter 1 to edit First Name.\nEnter 2 to edit Last name.\nEnter 3 to edit Address.\nEnter 4 to edit City.\nEnter 5 to edit State.\nEnter 6 to edit Zip Code.\nEnter 7 to edit Phone Number.\nEnter 8 to edit Email.")
+            edit_choice = input("Enter your choice: ")
+
+            if edit_choice in ['1', '2', '3', '4', '5', '6', '7', '8']:
+                fields = ['first_name', 'last_name', 'address', 'city', 'state', 'zip_code', 'phone_number', 'email']
+                field = fields[int(edit_choice) - 1]
+                new_value = get_valid_input(f"Enter new value for {field}: ", lambda x: len(x) > 0)
+                address_book.edit_contact(field, new_value)
+                print("\nContact Edited Successfully!")
+
+            else:
+                print("Invalid choice. Please try again.")
+        elif choice == '4':
             # Exit the program
             break
         else:
