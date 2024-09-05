@@ -9,7 +9,6 @@
 
 
 '''
-
 # Import required modules/files
 import re
 from logger import get_info_logger
@@ -24,24 +23,7 @@ logger = get_info_logger('AddressBook')
 
 class Contact:
     def __init__(self, first_name, last_name, address, city, state, zip_code, phone_number, email):
-        
-        """
-        
-        Description:
-        Initializes a Contact instance with the given details.
-        
-        Parameters:
-        first_name (str): First name of the contact.
-        last_name (str): Last name of the contact.
-        address (str): Address of the contact.
-        city (str): City of the contact.
-        state (str): State of the contact.
-        zip_code (str): Zip code of the contact.
-        phone_number (str): Phone number of the contact.
-        email (str): Email address of the contact.
-        
-        """
-        
+
         self.first_name = first_name
         self.last_name = last_name
         self.address = address
@@ -57,8 +39,8 @@ class Contact:
 
 class AddressBook:
     def __init__(self):
-        # Initialize the address book with a single contact (default to None)
-        self.contact = None
+        # Initialize the address book with a list to store multiple contacts
+        self.contacts = []
 
     def add_contact(self, contact):
         
@@ -72,81 +54,85 @@ class AddressBook:
         
         """
         
-        self.contact = contact
+        self.contacts.append(contact)
         logger.info(f"Contact added: {contact.__dict__}")
 
-    def edit_contact(self, field, new_value):
+    def edit_contact(self, name, field, new_value):
         
         """
         
         Description:
-        Edits the contact's details.
+        Edits a contact's details identified by the name.
         
         Parameters:
+        name (str): The name of the contact to edit.
         field (str): The field to edit ('first_name', 'last_name', 'address', 'city', 'state', 'zip_code', 'phone_number', 'email').
         new_value (str): The new value for the specified field.
         
         """
-        
-        if self.contact:
-            if field == 'first_name':
-                self.contact.first_name = new_value
-            elif field == 'last_name':
-                self.contact.last_name = new_value
-            elif field == 'address':
-                self.contact.address = new_value
-            elif field == 'city':
-                self.contact.city = new_value
-            elif field == 'state':
-                self.contact.state = new_value
-            elif field == 'zip_code':
-                self.contact.zip_code = new_value
-            elif field == 'phone_number':
-                self.contact.phone_number = new_value
-            elif field == 'email':
-                self.contact.email = new_value
-            else:
-                logger.error(f"Invalid field: {field}")
+        for contact in self.contacts:
+            if (contact.first_name + " " + contact.last_name) == name:
+                if field == 'first_name':
+                    contact.first_name = new_value
+                elif field == 'last_name':
+                    contact.last_name = new_value
+                elif field == 'address':
+                    contact.address = new_value
+                elif field == 'city':
+                    contact.city = new_value
+                elif field == 'state':
+                    contact.state = new_value
+                elif field == 'zip_code':
+                    contact.zip_code = new_value
+                elif field == 'phone_number':
+                    contact.phone_number = new_value
+                elif field == 'email':
+                    contact.email = new_value
+                else:
+                    logger.error(f"Invalid field: {field}")
+                    return
+                logger.info(f"Contact updated: {contact.__dict__}")
                 return
-            logger.info(f"Contact updated: {self.contact.__dict__}")
-        else:
-            logger.error("No contact found to edit.")
+        logger.error(f"No contact found with the name: {name}")
+        print("No contact found with the provided name.")
+
     def delete_contact(self, name):
         
         """
         
         Description:
-        Deletes the contact if the contact's name matches the given name.
+        Deletes a contact identified by the name.
         
         Parameters:
         name (str): The name of the contact to delete.
         
         """
-        
-        if self.contact and (self.contact.first_name + " " + self.contact.last_name) == name:
-            logger.info(f"Deleting contact: {self.contact}")
-            self.contact = None
-            print("Contact deleted successfully!")
-        else:
-            logger.error(f"No contact found with the name: {name}")
-            print("No contact found with the provided name.")
+        for i, contact in enumerate(self.contacts):
+            if (contact.first_name + " " + contact.last_name) == name:
+                logger.info(f"Deleting contact: {contact.__dict__}")
+                del self.contacts[i]
+                print("Contact deleted successfully!")
+                return
+        logger.error(f"No contact found with the name: {name}")
+        print("No contact found with the provided name.")
 
-    def display_contact(self):
+    def display_contacts(self):
+        
         """
         
         Description:
-        Display Contact.
+        Displays all contacts in the address book.
         
         Parameters:
         None.
         
         """
-        if self.contact:
-                logger.info(f"Contact: {self.contact.__dict__}")
-                print(f"Contact: {self.contact.__dict__}")
+        if self.contacts:
+            for contact in self.contacts:
+                logger.info(f"Contact: {contact.__dict__}")
+                print(contact.__dict__)
         else:
             print("No contacts to display.")
-
 
 def get_valid_input(prompt, validation_func):
     
@@ -163,7 +149,6 @@ def get_valid_input(prompt, validation_func):
     str: Validated user input.
     
     """
-    
     while True:
         user_input = input(prompt)
         if validation_func(user_input):
@@ -186,7 +171,6 @@ def is_valid_email(email):
     bool: True if the email is valid, False otherwise.
     
     """
-    
     return re.match(EMAIL_REGEX, email) is not None
 
 def is_valid_phone(phone):
@@ -228,7 +212,7 @@ def main():
 
     while True:
         print("\n1. Add New Contact")
-        print("2. Display Contact")
+        print("2. Display Contacts")
         print("3. Edit Contact")
         print("4. Delete Contact")
         print("5. Exit")
@@ -236,45 +220,52 @@ def main():
         choice = input("Enter your choice: ")
 
         if choice == '1':
-            # Get user inputs and validate
-            first_name = get_valid_input("Enter first name: ", lambda x: len(x) > 0)
-            last_name = get_valid_input("Enter last name: ", lambda x: len(x) > 0)
-            address = get_valid_input("Enter address: ", lambda x: len(x) > 0)
-            city = get_valid_input("Enter city: ", lambda x: len(x) > 0)
-            state = get_valid_input("Enter state: ", lambda x: len(x) > 0)
-            zip_code = get_valid_input("Enter zip code: ", is_valid_zip)
-            phone_number = get_valid_input("Enter phone number: ", is_valid_phone)
-            email = get_valid_input("Enter email address: ", is_valid_email)
+            while True:
+                # Get user inputs and validate
+                first_name = get_valid_input("Enter first name: ", lambda x: len(x) > 0)
+                last_name = get_valid_input("Enter last name: ", lambda x: len(x) > 0)
+                address = get_valid_input("Enter address: ", lambda x: len(x) > 0)
+                city = get_valid_input("Enter city: ", lambda x: len(x) > 0)
+                state = get_valid_input("Enter state: ", lambda x: len(x) > 0)
+                zip_code = get_valid_input("Enter zip code: ", is_valid_zip)
+                phone_number = get_valid_input("Enter phone number: ", is_valid_phone)
+                email = get_valid_input("Enter email address: ", is_valid_email)
 
-            # Create and add contact
-            contact = Contact(first_name, last_name, address, city, state, zip_code, phone_number, email)
-            address_book.add_contact(contact)
-            print("\nNew Contact Added Successfully!")
+                # Create and add contact
+                contact = Contact(first_name, last_name, address, city, state, zip_code, phone_number, email)
+                address_book.add_contact(contact)
+                print("\nNew Contact Added Successfully!")
 
+                more_contacts = input("Do you want to add another contact? (y/n): ").strip().lower()
+                if more_contacts != 'y':
+                    break
 
         elif choice == '2':
-            address_book.display_contact()
+            address_book.display_contacts()
+
         elif choice == '3':
             print("\nEnter 1 to edit First Name.\nEnter 2 to edit Last name.\nEnter 3 to edit Address.\nEnter 4 to edit City.\nEnter 5 to edit State.\nEnter 6 to edit Zip Code.\nEnter 7 to edit Phone Number.\nEnter 8 to edit Email.")
             edit_choice = input("Enter your choice: ")
 
             if edit_choice in ['1', '2', '3', '4', '5', '6', '7', '8']:
+                full_name = input("Enter the full name of the contact to edit: ")
                 fields = ['first_name', 'last_name', 'address', 'city', 'state', 'zip_code', 'phone_number', 'email']
                 field = fields[int(edit_choice) - 1]
                 new_value = get_valid_input(f"Enter new value for {field}: ", lambda x: len(x) > 0)
-                address_book.edit_contact(field, new_value)
+                address_book.edit_contact(full_name, field, new_value)
                 print("\nContact Edited Successfully!")
 
             else:
                 print("Invalid choice. Please try again.")
+
         elif choice == '4':
             full_name = input("Enter full name to delete contact: ")
             address_book.delete_contact(full_name)
 
-            
         elif choice == '5':
             # Exit the program
             break
+
         else:
             print("Invalid choice. Please try again.")
 
