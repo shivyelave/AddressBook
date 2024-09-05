@@ -111,6 +111,26 @@ class AddressBook:
             logger.info(f"Contact updated: {self.contact.__dict__}")
         else:
             logger.error("No contact found to edit.")
+    def delete_contact(self, name):
+        
+        """
+        
+        Description:
+        Deletes the contact if the contact's name matches the given name.
+        
+        Parameters:
+        name (str): The name of the contact to delete.
+        
+        """
+        
+        if self.contact and (self.contact.first_name + " " + self.contact.last_name) == name:
+            logger.info(f"Deleting contact: {self.contact}")
+            self.contact = None
+            print("Contact deleted successfully!")
+        else:
+            logger.error(f"No contact found with the name: {name}")
+            print("No contact found with the provided name.")
+
     def display_contact(self):
         """
         
@@ -210,7 +230,8 @@ def main():
         print("\n1. Add New Contact")
         print("2. Display Contact")
         print("3. Edit Contact")
-        print("4. Exit")
+        print("4. Delete Contact")
+        print("5. Exit")
 
         choice = input("Enter your choice: ")
 
@@ -247,6 +268,11 @@ def main():
             else:
                 print("Invalid choice. Please try again.")
         elif choice == '4':
+            full_name = input("Enter full name to delete contact: ")
+            address_book.delete_contact(full_name)
+
+            
+        elif choice == '5':
             # Exit the program
             break
         else:
