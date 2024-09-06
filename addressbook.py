@@ -446,6 +446,8 @@ def main():
                             logger.info(f"- {name}")
 
                             print(f"- {name}")
+                        logger.info(f"\nTotal Contact: {len(names)}")
+                        print(f"\nTotal Contact: {len(names)}")
                 else:
                     logger.error(f"No persons found in state '{state_to_search}'.")
 
