@@ -118,11 +118,6 @@ class AddressBook:
         logger.error(f"No contact found with the name: {name}")
         print("No contact found with the provided name.")
     
-
-
-
-
-
     def display_contacts(self):
         
         """
@@ -141,6 +136,39 @@ class AddressBook:
                 print(contact.__dict__)
         else:
             print("No contacts to display.")
+def search_person_in_city(address_book, city):
+    
+    """
+    
+    Description:
+    Searches for persons in a specific city within the provided address book and displays the result.
+    
+    Parameters:
+    address_book (AddressBook): The AddressBook instance to search within.
+    city (str): The city to search for persons in.
+    
+    """
+    
+    found_contacts = []
+    
+    # Iterate over the contacts in the address book
+    for contact in address_book.contacts:
+        if contact.city.lower() == city.lower():  # Match city case-insensitively
+            found_contacts.append(contact)
+
+    # Display the results
+    if found_contacts:
+        print(f"Found persons in city '{city}':")
+        logger.info(f"Found persons in city '{city}':")
+
+        for contact in found_contacts:
+            print(contact.__dict__)
+            logger.info(contact.__dict__)
+    else:
+        print(f"No persons found in city '{city}'.")
+        logger.info(f"No persons found in city '{city}'.")
+
+
 def display_all_address_books(address_books):
         
     """
@@ -246,7 +274,8 @@ def main():
         print("\n1. Create New Address Book")
         print("2. Select Address Book")
         print("3. Display Address Book")
-        print("4. Exit")
+        print("4. Search contact by city in Address Books")
+        print("5. Exit")
 
         choice = input("Enter your choice: ")
 
@@ -343,9 +372,24 @@ def main():
                     print("Invalid choice. Please try again.")
 
         elif choice == '3':
-            display_all_address_books(address_books)            
+                display_all_address_books(address_books)  
 
         elif choice == '4':
+            if len(address_books) != 0:
+                book_name = input("Enter the name of the Address Book to search: ")
+                if book_name not in address_books:
+                    print("Address Book not found.")
+                    continue
+
+                address_book = address_books[book_name]
+
+                city_to_search = get_valid_input("Enter city to search: ", lambda x: len(x) > 0)
+                search_person_in_city(address_book,city_to_search)
+            else:
+                print("No address books available.")
+
+
+        elif choice == '5':
             # Exit the program
             break
 
