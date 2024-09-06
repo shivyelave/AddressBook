@@ -49,14 +49,37 @@ class AddressBook:
         
         Description:
         Adds a Contact instance to the address book if the contact does not already exist.
+        Inserts the contact in alphabetical order by name.
         
         Parameters:
         contact (Contact): The Contact instance to add.
         
         """
         
-        self.contacts.append(contact)
+        # Define a function to get the full name
+        def get_full_name(c):
+            return f"{c.first_name} {c.last_name}"
+        
+        # Check if the contact already exists
+        full_name = get_full_name(contact)
+        if any(get_full_name(c) == full_name for c in self.contacts):
+            print("A contact with this name already exists.")
+            return
+        
+        # Find the correct position to insert the new contact
+        inserted = False
+        for i, existing_contact in enumerate(self.contacts):
+            if get_full_name(existing_contact) > full_name:
+                self.contacts.insert(i, contact)
+                inserted = True
+                break
+        
+        # If the contact was not inserted, append it to the end
+        if not inserted:
+            self.contacts.append(contact)
+        
         logger.info(f"Contact added: {contact.__dict__}")
+
 
 
     def edit_contact(self, name, field, new_value):
@@ -216,7 +239,7 @@ def display_all_address_books(address_books):
         print("No Address Books available.")
         return
     for book_name, address_book in address_books.items():
-            logger.info(f"Addressbook: {book_name}")
+            logger.info(f"Address book: {book_name}")
 
             print(f"\nAddress Book: {book_name}")
             if address_book.contacts:
@@ -436,7 +459,7 @@ def main():
                 
                 if state_persons_dict:
                     print(f"\nPersons in state '{state_to_search}':")
-                    logger.info(f"\nPersons in state '{state_to_search}':")
+                    logger.info(f"Persons in state '{state_to_search}':")
 
                     for state, names in state_persons_dict.items():
                         logger.info(f"State: {state}")
@@ -446,7 +469,7 @@ def main():
                             logger.info(f"- {name}")
 
                             print(f"- {name}")
-                        logger.info(f"\nTotal Contact: {len(names)}")
+                        logger.info(f"Total Contact: {len(names)}")
                         print(f"\nTotal Contact: {len(names)}")
                 else:
                     logger.error(f"No persons found in state '{state_to_search}'.")
