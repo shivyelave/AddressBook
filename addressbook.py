@@ -141,17 +141,28 @@ class AddressBook:
         logger.error(f"No contact found with the name: {name}")
         print("No contact found with the provided name.")
     
-    def display_contacts(self):
+    def display_contacts(self, sort_by=None):
         
         """
         
-        Description:
-        Displays all contacts in the address book.
+        Displays all contacts in the address book, sorted by the specified attribute.
         
         Parameters:
-        None.
+        sort_by (str): The attribute to sort by ('city', 'state', 'zip_code'). 
+                       If None, contacts are displayed in their original order.
         
         """
+        
+        if sort_by:
+            if sort_by == 'city':
+                self.contacts.sort(key=self.get_city)
+            elif sort_by == 'state':
+                self.contacts.sort(key=self.get_state)
+            elif sort_by == 'zip_code':
+                self.contacts.sort(key=self.get_zip_code)
+            else:
+                print(f"Invalid attribute '{sort_by}'. Showing contacts in original order.")
+                return
         
         if self.contacts:
             for contact in self.contacts:
@@ -159,6 +170,17 @@ class AddressBook:
                 print(contact.__dict__)
         else:
             print("No contacts to display.")
+
+    def get_city(self, contact):
+        return contact.city
+
+    def get_state(self, contact):
+        return contact.state
+
+    def get_zip_code(self, contact):
+        return contact.zip_code
+
+
 def search_person_in_city(address_book, city):
     
     """
@@ -394,7 +416,31 @@ def main():
                         break
 
                 elif sub_choice == '2':
-                    address_book.display_contacts()
+                    # Ask user if they want to sort the display
+                    sort_choice = input("Do you want to display contacts sorted by an attribute? (y/n): ")
+                    
+                    if sort_choice.lower() == 'y':
+                        print("Select attribute to sort by:")
+                        print("1. City")
+                        print("2. State")
+                        print("3. Zip Code")
+                        sub_choice = input("Enter your choice (1/2/3): ")
+
+                        if sub_choice == '1':
+                            address_book.display_contacts(sort_by='city')
+                        elif sub_choice == '2':
+                            address_book.display_contacts(sort_by='state')
+                        elif sub_choice == '3':
+                            address_book.display_contacts(sort_by='zip_code')
+                        else:
+                            logger.error("Invalid choice. Displaying contacts in original order.")
+                            print("Invalid choice. Displaying contacts in original order.")
+                            address_book.display_contacts()
+                    elif sort_choice.lower() == 'n':
+                        address_book.display_contacts()
+                    else:
+                        print("Invalid option. Displaying contacts in original order.")
+                        address_book.display_contacts()
 
                 elif sub_choice == '3':
                     full_name = input("Enter full name to edit contact: ")
