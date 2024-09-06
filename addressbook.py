@@ -10,7 +10,6 @@
 
 '''
 
-
 # Import required modules/files
 import re
 from logger import get_info_logger
@@ -21,7 +20,7 @@ PHONE_REGEX = r'^\d{10}$'
 ZIP_REGEX = r'^\d{6}$'
 
 # Setup logger
-logger = get_info_logger('AddressBook')
+logger = get_info_logger('AddressBookSystem')
 
 class Contact:
     def __init__(self, first_name, last_name, address, city, state, zip_code, phone_number, email):
@@ -49,19 +48,20 @@ class AddressBook:
         """
         
         Description:
-        Adds a Contact instance to the address book and logs the addition.
+        Adds a Contact instance to the address book if the contact does not already exist.
         
         Parameters:
         contact (Contact): The Contact instance to add.
         
         """
+        
         self.contacts.append(contact)
         logger.info(f"Contact added: {contact.__dict__}")
+
 
     def edit_contact(self, name, field, new_value):
         
         """
-        
         Description:
         Edits a contact's details identified by the name.
         
@@ -109,7 +109,6 @@ class AddressBook:
         name (str): The name of the contact to delete.
         
         """
-        
         for i, contact in enumerate(self.contacts):
             if (contact.first_name + " " + contact.last_name) == name:
                 logger.info(f"Deleting contact: {contact.__dict__}")
@@ -118,6 +117,11 @@ class AddressBook:
                 return
         logger.error(f"No contact found with the name: {name}")
         print("No contact found with the provided name.")
+    
+
+
+
+
 
     def display_contacts(self):
         
@@ -130,13 +134,37 @@ class AddressBook:
         None.
         
         """
+        
         if self.contacts:
             for contact in self.contacts:
                 logger.info(f"Contact: {contact.__dict__}")
-                print(contact)
+                print(contact.__dict__)
         else:
             print("No contacts to display.")
+def display_all_address_books(address_books):
+        
+    """
+        Description:
+        Displays all address books along with their contacts.
+        
+        Parameters:
+        address_books (dict): Dictionary containing address books with names as keys and AddressBook instances as values.
+        
+    """
+    if not address_books:
+        print("No Address Books available.")
+        return
+    for book_name, address_book in address_books.items():
+            logger.info(f"Addressbook: {book_name}")
 
+            print(f"\nAddress Book: {book_name}")
+            if address_book.contacts:
+                for contact in address_book.contacts:
+                    logger.info(f"Contact: {contact.__dict__}")
+
+                    print(contact.__dict__)
+            else:
+                print("No contacts in this address book.")
 def get_valid_input(prompt, validation_func):
     
     """
@@ -152,7 +180,6 @@ def get_valid_input(prompt, validation_func):
     str: Validated user input.
     
     """
-    
     while True:
         user_input = input(prompt)
         if validation_func(user_input):
@@ -175,7 +202,6 @@ def is_valid_email(email):
     bool: True if the email is valid, False otherwise.
     
     """
-    
     return re.match(EMAIL_REGEX, email) is not None
 
 def is_valid_phone(phone):
@@ -192,7 +218,6 @@ def is_valid_phone(phone):
     bool: True if the phone number is valid, False otherwise.
     
     """
-    
     return re.match(PHONE_REGEX, phone) is not None
 
 def is_valid_zip(zip_code):
@@ -209,7 +234,6 @@ def is_valid_zip(zip_code):
     bool: True if the zip code is valid, False otherwise.
     
     """
-    
     return re.match(ZIP_REGEX, zip_code) is not None
 
 def main():
@@ -221,7 +245,8 @@ def main():
     while True:
         print("\n1. Create New Address Book")
         print("2. Select Address Book")
-        print("3. Exit")
+        print("3. Display Address Book")
+        print("4. Exit")
 
         choice = input("Enter your choice: ")
 
@@ -262,6 +287,13 @@ def main():
                         # Get user inputs and validate
                         first_name = get_valid_input("Enter first name: ", lambda x: len(x) > 0)
                         last_name = get_valid_input("Enter last name: ", lambda x: len(x) > 0)
+
+                        # Check for duplicate contact
+                        full_name = f"{first_name} {last_name}"
+                        if any(contact.first_name + " " + contact.last_name == full_name for contact in address_book.contacts):
+                            print("A contact with this name already exists. Please enter a different name.")
+                            continue
+
                         address = get_valid_input("Enter address: ", lambda x: len(x) > 0)
                         city = get_valid_input("Enter city: ", lambda x: len(x) > 0)
                         state = get_valid_input("Enter state: ", lambda x: len(x) > 0)
@@ -272,21 +304,25 @@ def main():
                         # Create and add contact
                         contact = Contact(first_name, last_name, address, city, state, zip_code, phone_number, email)
                         address_book.add_contact(contact)
-                        print("\nNew Contact Added Successfully!")
-
-                        more_contacts = input("Do you want to add another contact? (yes/no): ").strip().lower()
-                        if more_contacts != 'yes':
-                            break
+                        print("Contact added successfully!")
+                        break
 
                 elif sub_choice == '2':
                     address_book.display_contacts()
 
                 elif sub_choice == '3':
-                    print("\nEnter 1 to edit First Name.\nEnter 2 to edit Last name.\nEnter 3 to edit Address.\nEnter 4 to edit City.\nEnter 5 to edit State.\nEnter 6 to edit Zip Code.\nEnter 7 to edit Phone Number.\nEnter 8 to edit Email.")
-                    edit_choice = input("Enter your choice: ")
+                    full_name = input("Enter full name to edit contact: ")
+                    if any(contact.first_name + " " + contact.last_name == full_name for contact in address_book.contacts):
+                        print("\n1. Edit First Name")
+                        print("2. Edit Last Name")
+                        print("3. Edit Address")
+                        print("4. Edit City")
+                        print("5. Edit State")
+                        print("6. Edit Zip Code")
+                        print("7. Edit Phone Number")
+                        print("8. Edit Email")
+                        edit_choice = input("Enter your choice: ")
 
-                    if edit_choice in ['1', '2', '3', '4', '5', '6', '7', '8']:
-                        full_name = input("Enter the full name of the contact to edit: ")
                         fields = ['first_name', 'last_name', 'address', 'city', 'state', 'zip_code', 'phone_number', 'email']
                         field = fields[int(edit_choice) - 1]
                         new_value = get_valid_input(f"Enter new value for {field}: ", lambda x: len(x) > 0)
@@ -307,6 +343,9 @@ def main():
                     print("Invalid choice. Please try again.")
 
         elif choice == '3':
+            display_all_address_books(address_books)            
+
+        elif choice == '4':
             # Exit the program
             break
 
