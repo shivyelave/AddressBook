@@ -169,6 +169,39 @@ def search_person_in_city(address_book, city):
         logger.info(f"No persons found in city '{city}'.")
 
 
+def persons_by_state(address_book, state):
+    
+    """
+    
+    Description:
+    Creates a dictionary where the state is the key, and the values are the names of persons 
+    (first and last name) from the specified state in the provided address book.
+    
+    Parameters:
+    address_book (AddressBook): The AddressBook instance to search within.
+    state (str): The state to search for persons in.
+
+    Returns:
+    dict: A dictionary with the state as the key and a list of person names as values.
+    
+    """
+    state_persons_dict = {}
+
+    # Iterate over the contacts in the address book
+    for contact in address_book.contacts:
+        if contact.state.lower() == state.lower():  # Match state case-insensitively
+            full_name = contact.first_name + " " + contact.last_name
+            if state not in state_persons_dict:
+                state_persons_dict[state] = [full_name]
+            else:
+                state_persons_dict[state].append(full_name)
+    
+    return state_persons_dict
+
+
+
+
+
 def display_all_address_books(address_books):
         
     """
@@ -274,8 +307,9 @@ def main():
         print("\n1. Create New Address Book")
         print("2. Select Address Book")
         print("3. Display Address Book")
-        print("4. Search contact by city in Address Books")
-        print("5. Exit")
+        print("4. Search contact by city in Address Book")
+        print("5. Get Persons by State in Address Book")
+        print("6. Exit")
 
         choice = input("Enter your choice: ")
 
@@ -388,8 +422,43 @@ def main():
             else:
                 print("No address books available.")
 
-
         elif choice == '5':
+            if len(address_books) != 0:
+                book_name = input("Enter the name of the Address Book to search: ")
+                if book_name not in address_books:
+                    print("Address Book not found.")
+                    continue
+
+                address_book = address_books[book_name]
+
+                state_to_search = get_valid_input("Enter state to search: ", lambda x: len(x) > 0)
+                state_persons_dict = persons_by_state(address_book, state_to_search)
+                
+                if state_persons_dict:
+                    print(f"\nPersons in state '{state_to_search}':")
+                    logger.info(f"\nPersons in state '{state_to_search}':")
+
+                    for state, names in state_persons_dict.items():
+                        logger.info(f"State: {state}")
+
+                        print(f"State: {state}")
+                        for name in names:
+                            logger.info(f"- {name}")
+
+                            print(f"- {name}")
+                else:
+                    logger.error(f"No persons found in state '{state_to_search}'.")
+
+                    print(f"No persons found in state '{state_to_search}'.")
+            else:
+                logger.error("No address books available.")
+
+                print("No address books available.")
+
+
+
+
+        elif choice == '6':
             # Exit the program
             break
 
