@@ -44,7 +44,7 @@ class Contact:
 class AddressBook:
     def __init__(self):
         self.contacts = []
-        self.file_name = "address_book.txt"
+        self.file_name = "address_book.csv"
         self.read_from_file()  # Read contacts from file when initializing the AddressBook
     
     def add_contact(self, contact):
