@@ -9,6 +9,7 @@
 
 
 '''
+import os
 
 # Import required modules/files
 import re
@@ -23,8 +24,8 @@ ZIP_REGEX = r'^\d{6}$'
 logger = get_info_logger('AddressBookSystem')
 
 class Contact:
-    def __init__(self, first_name, last_name, address, city, state, zip_code, phone_number, email):
-
+    def __init__(self, address_book_name,first_name, last_name, address, city, state, zip_code, phone_number, email):
+        self.address_book_name = address_book_name
         self.first_name = first_name
         self.last_name = last_name
         self.address = address
@@ -38,29 +39,19 @@ class Contact:
         return (f"{self.first_name} {self.last_name}, {self.address}, {self.city}, "
                 f"{self.state}, {self.zip_code}, {self.phone_number}, {self.email}")
 
+
+
 class AddressBook:
     def __init__(self):
-        # Initialize the address book with a list to store multiple contacts
         self.contacts = []
-
+        self.file_name = "address_book.txt"
+        self.read_from_file()  # Read contacts from file when initializing the AddressBook
+    
     def add_contact(self, contact):
-        
-        """
-        
-        Description:
-        Adds a Contact instance to the address book if the contact does not already exist.
-        Inserts the contact in alphabetical order by name.
-        
-        Parameters:
-        contact (Contact): The Contact instance to add.
-        
-        """
-        
-        # Define a function to get the full name
         def get_full_name(c):
             return f"{c.first_name} {c.last_name}"
-        
-        # Check if the contact already exists
+
+        # Check if contact already exists
         full_name = get_full_name(contact)
         if any(get_full_name(c) == full_name for c in self.contacts):
             print("A contact with this name already exists.")
@@ -74,111 +65,82 @@ class AddressBook:
                 inserted = True
                 break
         
-        # If the contact was not inserted, append it to the end
         if not inserted:
             self.contacts.append(contact)
         
+        # Log contact added
         logger.info(f"Contact added: {contact.__dict__}")
-
-
-
+        
+        # Write the contact to file
+        self.write_to_file()
+    
     def edit_contact(self, name, field, new_value):
-        
-        """
-        Description:
-        Edits a contact's details identified by the name.
-        
-        Parameters:
-        name (str): The name of the contact to edit.
-        field (str): The field to edit ('first_name', 'last_name', 'address', 'city', 'state', 'zip_code', 'phone_number', 'email').
-        new_value (str): The new value for the specified field.
-        
-        """
-        
         for contact in self.contacts:
             if (contact.first_name + " " + contact.last_name) == name:
-                if field == 'first_name':
-                    contact.first_name = new_value
-                elif field == 'last_name':
-                    contact.last_name = new_value
-                elif field == 'address':
-                    contact.address = new_value
-                elif field == 'city':
-                    contact.city = new_value
-                elif field == 'state':
-                    contact.state = new_value
-                elif field == 'zip_code':
-                    contact.zip_code = new_value
-                elif field == 'phone_number':
-                    contact.phone_number = new_value
-                elif field == 'email':
-                    contact.email = new_value
+                if hasattr(contact, field):
+                    setattr(contact, field, new_value)
+                    logger.info(f"Contact updated: {contact.__dict__}")
+                    self.write_to_file()  # Update file after editing contact
+                    return
                 else:
                     logger.error(f"Invalid field: {field}")
+                    print("Invalid field.")
                     return
-                logger.info(f"Contact updated: {contact.__dict__}")
-                return
         logger.error(f"No contact found with the name: {name}")
         print("No contact found with the provided name.")
-
+    
     def delete_contact(self, name):
-        
-        """
-        
-        Description:
-        Deletes a contact identified by the name.
-        
-        Parameters:
-        name (str): The name of the contact to delete.
-        
-        """
         for i, contact in enumerate(self.contacts):
             if (contact.first_name + " " + contact.last_name) == name:
                 logger.info(f"Deleting contact: {contact.__dict__}")
                 del self.contacts[i]
                 print("Contact deleted successfully!")
+                self.write_to_file()  # Update file after deleting contact
                 return
         logger.error(f"No contact found with the name: {name}")
         print("No contact found with the provided name.")
     
     def display_contacts(self, sort_by=None):
+        # Optionally sort by the given attribute
+        if sort_by and sort_by in ['city', 'state', 'zip_code']:
+            self.contacts.sort(key=lambda contact: getattr(contact, sort_by))
+        elif sort_by:
+            print(f"Invalid attribute '{sort_by}'. Showing contacts in original order.")
         
-        """
-        
-        Displays all contacts in the address book, sorted by the specified attribute.
-        
-        Parameters:
-        sort_by (str): The attribute to sort by ('city', 'state', 'zip_code'). 
-                       If None, contacts are displayed in their original order.
-        
-        """
-        
-        if sort_by:
-            if sort_by == 'city':
-                self.contacts.sort(key=self.get_city)
-            elif sort_by == 'state':
-                self.contacts.sort(key=self.get_state)
-            elif sort_by == 'zip_code':
-                self.contacts.sort(key=self.get_zip_code)
-            else:
-                print(f"Invalid attribute '{sort_by}'. Showing contacts in original order.")
-                return
-        
+        # Display contacts
         if self.contacts:
             for contact in self.contacts:
                 logger.info(f"Contact: {contact.__dict__}")
                 print(contact.__dict__)
         else:
             print("No contacts to display.")
+    
+    def write_to_file(self):
+        try:
+            with open(self.file_name, 'w') as file:
+                for contact in self.contacts:
+                    contact_data = f"{contact.address_book_name},{contact.first_name},{contact.last_name},{contact.address},{contact.city},{contact.state},{contact.zip_code},{contact.phone_number},{contact.email}\n"
+                    file.write(contact_data)
+            print(f"Contacts successfully written to {self.file_name}.")
+        except Exception as e:
+            print(f"An error occurred while writing to file: {e}")
+    
+    def read_from_file(self):
+        if os.path.exists(self.file_name):
+            try:
+                with open(self.file_name, 'r') as file:
+                    self.contacts = []
+                    for line in file:
+                        # Read contacts from CSV format
+                        address_book_name,first_name, last_name, address, city, state, zip_code, phone_number, email = line.strip().split(',')
+                        contact = Contact(address_book_name,first_name, last_name, address, city, state, zip_code, phone_number, email)
+                        self.contacts.append(contact)
+                print(f"Contacts successfully loaded from {self.file_name}.")
+            except Exception as e:
+                print(f"An error occurred while reading from file: {e}")
+        else:
+            print(f"{self.file_name} does not exist.")
 
-    def get_city(self, contact):
-        return contact.city
-
-    def get_state(self, contact):
-        return contact.state
-
-    def get_zip_code(self, contact):
-        return contact.zip_code
 
 
 def search_person_in_city(address_book, city):
@@ -242,9 +204,6 @@ def persons_by_state(address_book, state):
                 state_persons_dict[state].append(full_name)
     
     return state_persons_dict
-
-
-
 
 
 def display_all_address_books(address_books):
@@ -343,7 +302,7 @@ def is_valid_zip(zip_code):
     return re.match(ZIP_REGEX, zip_code) is not None
 
 def main():
-    print(f"{'*'*10}Welcome to Address Book System{'*'*10}")
+    print(f"{'*'*10} Welcome to Address Book System {'*'*10}")
 
     # Dictionary to hold multiple Address Books
     address_books = {}
@@ -410,7 +369,7 @@ def main():
                         email = get_valid_input("Enter email address: ", is_valid_email)
 
                         # Create and add contact
-                        contact = Contact(first_name, last_name, address, city, state, zip_code, phone_number, email)
+                        contact = Contact(book_name,first_name, last_name, address, city, state, zip_code, phone_number, email)
                         address_book.add_contact(contact)
                         print("Contact added successfully!")
                         break
