@@ -4,12 +4,13 @@
     @Author: Shivraj Yelave
     @Date: 05-09-24
     @Last modified by: Shivraj Yelave
-    @Last modified time: 05-09-24
+    @Last modified time: 075-09-24
     @Title: Address Book Program
 
 
 '''
 import os
+import json
 
 # Import required modules/files
 import re
@@ -44,7 +45,7 @@ class Contact:
 class AddressBook:
     def __init__(self):
         self.contacts = []
-        self.file_name = "address_book.csv"
+        self.file_name = "address_book.json"
         self.read_from_file()  # Read contacts from file when initializing the AddressBook
     
     def add_contact(self, contact):
@@ -117,10 +118,26 @@ class AddressBook:
     
     def write_to_file(self):
         try:
+            # Organize contacts into a dictionary with address book names as keys
+            address_book_dict = {}
+            for contact in self.contacts:
+                book_name = contact.address_book_name
+                if book_name not in address_book_dict:
+                    address_book_dict[book_name] = []
+                contact_data = {
+                    "first_name": contact.first_name,
+                    "last_name": contact.last_name,
+                    "address": contact.address,
+                    "city": contact.city,
+                    "state": contact.state,
+                    "zip_code": contact.zip_code,
+                    "phone_number": contact.phone_number,
+                    "email": contact.email
+                }
+                address_book_dict[book_name].append(contact_data)
+
             with open(self.file_name, 'w') as file:
-                for contact in self.contacts:
-                    contact_data = f"{contact.address_book_name},{contact.first_name},{contact.last_name},{contact.address},{contact.city},{contact.state},{contact.zip_code},{contact.phone_number},{contact.email}\n"
-                    file.write(contact_data)
+                json.dump(address_book_dict, file, indent=4)
             print(f"Contacts successfully written to {self.file_name}.")
         except Exception as e:
             print(f"An error occurred while writing to file: {e}")
@@ -129,18 +146,27 @@ class AddressBook:
         if os.path.exists(self.file_name):
             try:
                 with open(self.file_name, 'r') as file:
+                    address_book_dict = json.load(file)
                     self.contacts = []
-                    for line in file:
-                        # Read contacts from CSV format
-                        address_book_name,first_name, last_name, address, city, state, zip_code, phone_number, email = line.strip().split(',')
-                        contact = Contact(address_book_name,first_name, last_name, address, city, state, zip_code, phone_number, email)
-                        self.contacts.append(contact)
+                    for book_name, contacts_list in address_book_dict.items():
+                        for contact_data in contacts_list:
+                            contact = Contact(
+                                address_book_name=book_name,
+                                first_name=contact_data["first_name"],
+                                last_name=contact_data["last_name"],
+                                address=contact_data["address"],
+                                city=contact_data["city"],
+                                state=contact_data["state"],
+                                zip_code=contact_data["zip_code"],
+                                phone_number=contact_data["phone_number"],
+                                email=contact_data["email"]
+                            )
+                            self.contacts.append(contact)
                 print(f"Contacts successfully loaded from {self.file_name}.")
             except Exception as e:
                 print(f"An error occurred while reading from file: {e}")
         else:
             print(f"{self.file_name} does not exist.")
-
 
 
 def search_person_in_city(address_book, city):
