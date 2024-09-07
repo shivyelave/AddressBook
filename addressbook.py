@@ -49,6 +49,15 @@ class AddressBook:
         self.read_from_file()  # Read contacts from file when initializing the AddressBook
     
     def add_contact(self, contact):
+        
+        """
+        Description:        
+        Adds a new contact to the address book. Checks for duplicates and inserts the contact in alphabetical order.
+        
+        Parameters:
+        contact (Contact): The contact to be added.
+        
+        """
         def get_full_name(c):
             return f"{c.first_name} {c.last_name}"
 
@@ -76,6 +85,18 @@ class AddressBook:
         self.write_to_file()
     
     def edit_contact(self, name, field, new_value):
+        
+        """
+        Description:
+        Edits an existing contact in the address book.
+        
+        Parameters:
+        name (str): The full name of the contact to edit.
+        field (str): The field of the contact to edit.
+        new_value (str): The new value for the specified field.
+        
+        """
+        
         for contact in self.contacts:
             if (contact.first_name + " " + contact.last_name) == name:
                 if hasattr(contact, field):
@@ -91,6 +112,16 @@ class AddressBook:
         print("No contact found with the provided name.")
     
     def delete_contact(self, name):
+        
+        """
+        Description:
+        Deletes a contact from the address book.
+        
+        Parameters:
+        name (str): The full name of the contact to delete.
+        
+        """
+        
         for i, contact in enumerate(self.contacts):
             if (contact.first_name + " " + contact.last_name) == name:
                 logger.info(f"Deleting contact: {contact.__dict__}")
@@ -102,6 +133,16 @@ class AddressBook:
         print("No contact found with the provided name.")
     
     def display_contacts(self, sort_by=None):
+        
+        """
+        Description:
+        Displays all contacts in the address book, optionally sorted by a given attribute.
+        
+        Parameters:
+        sort_by (str): The attribute to sort by (e.g., 'city', 'state', 'zip_code').
+        
+        """
+        
         # Optionally sort by the given attribute
         if sort_by and sort_by in ['city', 'state', 'zip_code']:
             self.contacts.sort(key=lambda contact: getattr(contact, sort_by))
@@ -117,6 +158,13 @@ class AddressBook:
             print("No contacts to display.")
     
     def write_to_file(self):
+        
+        """
+        
+        Description:
+        Writes all contacts to the file in JSON format.
+        
+        """
         try:
             # Organize contacts into a dictionary with address book names as keys
             address_book_dict = {}
@@ -143,6 +191,13 @@ class AddressBook:
             print(f"An error occurred while writing to file: {e}")
     
     def read_from_file(self):
+        
+        """
+        
+        Description:
+        Reads contacts from the file and loads them into the address book.
+        
+        """
         if os.path.exists(self.file_name):
             try:
                 with open(self.file_name, 'r') as file:
