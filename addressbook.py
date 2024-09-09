@@ -156,6 +156,45 @@ class AddressBook:
                 print(contact.__dict__)
         else:
             print("No contacts to display.")
+            
+    def delete_address_book(self,address_book_name):
+        
+        """
+        
+        Description:
+        Deletes a specific address book from the file where multiple address books are stored.
+        
+        Parameters:
+        file_path (str): The path to the file storing multiple address books.
+        address_book_name (str): The name of the address book to delete.
+        
+        """
+        file_path = self.file_name
+        if not os.path.exists(file_path):
+            print(f"The file {file_path} does not exist.")
+            return
+        
+        with open(file_path, 'r') as file:
+            try:
+                # Load the data from the file
+                address_books = json.load(file)
+            except json.JSONDecodeError:
+                print("Error decoding JSON. The file may be corrupted.")
+                return
+        
+        # Check if the address book exists
+        if address_book_name in address_books:
+            # Delete the address book
+            del address_books[address_book_name]
+            print(f"Address book '{address_book_name}' deleted successfully!")
+            
+            # Write the updated data back to the file
+            with open(file_path, 'w') as file:
+                json.dump(address_books, file, indent=4)
+                logger.info(f"Deleted address book: {address_book_name}")
+        else:
+            print(f"No address book found with the name '{address_book_name}'.")
+
     
     def write_to_file(self):
         
@@ -223,6 +262,44 @@ class AddressBook:
         else:
             print(f"{self.file_name} does not exist.")
 
+    def display_all_address_books(self):
+        """
+        Description:
+        Displays all address books along with their contacts.
+        
+        """
+        # Check if file exists
+        if not os.path.exists(self.file_name):
+            print(f"The file {self.file_name} does not exist.")
+            return
+        
+        with open(self.file_name, 'r') as file:
+            try:
+                # Load the data from the file
+                address_books = json.load(file)
+            except json.JSONDecodeError:
+                print("Error decoding JSON. The file may be corrupted.")
+                return
+        
+        # Check if there are any address books available
+        if not address_books:
+            print("No Address Books available.")
+            return
+        
+        # Iterate over each address book and display its contacts
+        for book_name, contacts in address_books.items():
+            logger.info(f"Address book: {book_name}")
+            print(f"\nAddress Book: {book_name}")
+            
+            if contacts:
+                for contact in contacts:
+                    # Log and display each contact
+                    logger.info(f"Contact: {contact}")
+                    print(f"Contact: {contact}")
+            else:
+                print("No contacts in this address book.")
+
+
 
 def search_person_in_city(address_book, city):
     
@@ -287,30 +364,7 @@ def persons_by_state(address_book, state):
     return state_persons_dict
 
 
-def display_all_address_books(address_books):
-        
-    """
-        Description:
-        Displays all address books along with their contacts.
-        
-        Parameters:
-        address_books (dict): Dictionary containing address books with names as keys and AddressBook instances as values.
-        
-    """
-    if not address_books:
-        print("No Address Books available.")
-        return
-    for book_name, address_book in address_books.items():
-            logger.info(f"Address book: {book_name}")
 
-            print(f"\nAddress Book: {book_name}")
-            if address_book.contacts:
-                for contact in address_book.contacts:
-                    logger.info(f"Contact: {contact.__dict__}")
-
-                    print(contact.__dict__)
-            else:
-                print("No contacts in this address book.")
 def get_valid_input(prompt, validation_func):
     
     """
@@ -394,7 +448,8 @@ def main():
         print("3. Display Address Book")
         print("4. Search contact by city in Address Book")
         print("5. Get Persons by State in Address Book")
-        print("6. Exit")
+        print("6. Delete Address Book")
+        print("7. Exit")
 
         choice = input("Enter your choice: ")
 
@@ -515,7 +570,9 @@ def main():
                     print("Invalid choice. Please try again.")
 
         elif choice == '3':
-                display_all_address_books(address_books)  
+
+            AddressBook().display_all_address_books() 
+
 
         elif choice == '4':
             if len(address_books) != 0:
@@ -566,10 +623,14 @@ def main():
 
                 print("No address books available.")
 
-
-
-
         elif choice == '6':
+            delete_book_name = get_valid_input("Enter Address book name to  delete:  ", lambda x: len(x) > 0)
+            address_book = AddressBook()
+            address_book.delete_address_book(delete_book_name)
+
+
+
+        elif choice == '7':
             # Exit the program
             break
 
